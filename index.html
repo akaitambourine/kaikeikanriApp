@@ -63,12 +63,12 @@
                 <div class="flex items-center justify-between p-3.5 bg-slate-900/50 cursor-pointer select-none border-b border-slate-700/50" id="mobile_summary_toggle">
                     <div class="flex items-center gap-4">
                         <div>
-                            <div class="text-[10px] text-slate-400 font-medium mb-0.5">事業所得(年)</div>
+                            <div id="sm_label_operating_income" class="text-[10px] text-slate-400 font-medium mb-0.5">年間 営業利益</div>
                             <div id="sm_header_res_business_income" class="text-lg font-bold leading-none text-white mb-1">¥0</div>
                             <div id="sm_header_res_business_income_monthly" class="text-[9px] text-slate-400 font-medium">月: ¥0</div>
                         </div>
                         <div>
-                            <div class="text-[10px] text-orange-300 font-medium mb-0.5">内部留保(年)</div>
+                            <div id="sm_label_reserve" class="text-[10px] text-orange-300 font-medium mb-0.5">年間 キャッシュフロー</div>
                             <div id="sm_header_res_reserve" class="text-lg font-bold leading-none text-orange-200 mb-1">¥0</div>
                             <div id="sm_header_res_reserve_monthly" class="text-[9px] text-orange-300/80 font-medium">月: ¥0</div>
                         </div>
@@ -100,18 +100,24 @@
                     <div id="sm_reserve_container" class="p-3.5 bg-indigo-900/20 transition-colors">
                         <div class="flex justify-between items-center text-xs bg-slate-900/50 rounded-lg p-2.5">
                             <div class="flex flex-col">
-                                <span class="text-[9px] text-indigo-300/80 mb-0.5">税引後利益(年)</span>
+                                <span id="sm_label_true_profit" class="text-[9px] text-indigo-300/80 mb-0.5">税引後利益(年)</span>
                                 <span id="sm_res_true_profit" class="font-medium text-[11px] text-indigo-200">¥0</span>
                                 <span id="sm_res_true_profit_monthly" class="text-[9px] text-indigo-400/60 mt-0.5">月: ¥0</span>
                             </div>
                             <div class="w-px h-8 bg-slate-700"></div>
                             <div class="flex flex-col text-right">
-                                <span class="text-[9px] text-rose-400/80 mb-0.5">税金・保険料(年)</span>
+                                <span class="text-[9px] text-rose-400/80 mb-0.5">税金等 合計(年)</span>
                                 <span id="sm_tax_total" class="font-bold text-[11px] text-rose-300">¥0</span>
                                 <span id="sm_tax_total_monthly" class="text-[9px] text-rose-400/60 mt-0.5">月: ¥0</span>
                             </div>
                         </div>
                         <div id="sm_reserve_warning" class="hidden mt-2 text-[9px] bg-rose-500/20 text-rose-300 px-2 py-1 rounded font-bold text-center">※資金ショート(赤字)モデルです</div>
+                        
+                        <!-- 法人用: 社長の手取り -->
+                        <div id="sm_corporate_takehome_container" class="hidden mt-2 pt-2 border-t border-orange-500/30 flex justify-between items-center">
+                            <span class="text-[9px] text-orange-300">役員個人の手取額(推計):</span>
+                            <span id="sm_res_personal_takehome" class="text-[11px] font-bold text-orange-100">¥0</span>
+                        </div>
                     </div>
 
                     <div class="p-3.5">
@@ -135,14 +141,14 @@
                         <div class="space-y-2.5">
                             <div>
                                 <div class="flex justify-between text-[11px] mb-1">
-                                    <span class="text-slate-400">粗利益率</span>
+                                    <span class="text-slate-400">限界利益率(粗利率)</span>
                                     <span id="sm_res_gross_margin" class="font-bold text-slate-200">0.0%</span>
                                 </div>
                                 <div class="w-full bg-slate-700/50 rounded-full h-1.5"><div id="sm_bar_gross" class="bg-emerald-400 h-1.5 rounded-full" style="width: 0%"></div></div>
                             </div>
                             <div>
                                 <div class="flex justify-between text-[11px] mb-1">
-                                    <span class="text-slate-400">事業所得率</span>
+                                    <span id="sm_label_net_margin" class="text-slate-400">営業利益率</span>
                                     <span id="sm_res_net_margin" class="font-bold text-slate-200">0.0%</span>
                                 </div>
                                 <div class="w-full bg-slate-700/50 rounded-full h-1.5"><div id="sm_bar_net" class="bg-indigo-400 h-1.5 rounded-full" style="width: 0%"></div></div>
@@ -200,7 +206,7 @@
                         📊 売上・原価
                     </button>
                     <button class="tab-btn flex-1 py-2 sm:py-2.5 px-1 sm:px-2 rounded-lg text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-800 hover:bg-slate-200/50 transition-all duration-200" data-target="tab-labor">
-                        🧑‍🤝‍🧑 人件費
+                        🧑‍🤝‍🧑 人件費・報酬
                     </button>
                     <button class="tab-btn flex-1 py-2 sm:py-2.5 px-1 sm:px-2 rounded-lg text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-800 hover:bg-slate-200/50 transition-all duration-200" data-target="tab-fixed">
                         🏢 固定費
@@ -229,18 +235,34 @@
                         </div>
                     </div>
 
-                    <!-- ■ タブ2: 人件費 -->
+                    <!-- ■ タブ2: 人件費・報酬 -->
                     <div id="tab-labor" class="tab-content space-y-4 sm:space-y-6 hidden">
+                        <!-- 代表者セクション -->
                         <div class="bg-white p-3.5 sm:p-5 rounded-xl shadow-sm border border-slate-200">
                             <h2 class="text-sm sm:text-lg font-bold text-slate-800 mb-2 sm:mb-4 pb-2 border-b border-slate-100 flex items-center justify-between">
-                                <span>人件費・役員報酬</span>
+                                <span class="label-exec-title">事業主(生活費)</span>
+                            </h2>
+                            <p class="text-[9px] sm:text-[11px] text-slate-500 mb-2 sm:mb-4">個人の場合、事業主の生活費は経費にならず最終キャッシュフローから控除されます。法人の場合は役員報酬として経費になります。</p>
+                            
+                            <div class="space-y-3 sm:grid sm:grid-cols-1 sm:gap-3 sm:space-y-0" id="dynamic_exec_list"></div>
+                            
+                            <button type="button" id="btn_add_exec" class="mt-3 sm:mt-4 w-full py-2.5 sm:py-3 border-2 border-dashed border-indigo-200 rounded-xl text-indigo-500 hover:border-indigo-500 hover:bg-indigo-50 transition-colors flex items-center justify-center text-xs sm:text-sm font-bold shadow-sm">
+                                <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                事業主・役員を追加
+                            </button>
+                        </div>
+
+                        <!-- 従業員セクション -->
+                        <div class="bg-white p-3.5 sm:p-5 rounded-xl shadow-sm border border-slate-200">
+                            <h2 class="text-sm sm:text-lg font-bold text-slate-800 mb-2 sm:mb-4 pb-2 border-b border-slate-100 flex items-center justify-between">
+                                <span>従業員・アルバイト・外注</span>
                             </h2>
                             
                             <div class="space-y-3 sm:grid sm:grid-cols-1 sm:gap-4 sm:space-y-0" id="dynamic_labor_list"></div>
                             
                             <button type="button" id="btn_add_labor" class="mt-3 sm:mt-4 w-full py-2.5 sm:py-3 border-2 border-dashed border-indigo-200 rounded-xl text-indigo-500 hover:border-indigo-500 hover:bg-indigo-50 transition-colors flex items-center justify-center text-xs sm:text-sm font-bold shadow-sm">
-                                <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                新しい人員を追加
+                                <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                従業員・外注を追加
                             </button>
 
                             <div class="mt-3 sm:mt-4 p-2.5 sm:p-3 bg-rose-50 border border-rose-100 rounded-lg flex justify-between items-center">
@@ -326,9 +348,9 @@
                     <div class="absolute -top-10 -right-10 w-40 h-40 bg-indigo-500 opacity-20 rounded-full blur-3xl"></div>
                     <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-rose-500 opacity-20 rounded-full blur-3xl"></div>
                     
-                    <h2 class="text-slate-300 font-medium mb-1 relative z-10 flex items-center" title="売上 - 原価 - 人件費 - 固定費(利息含む)">
-                        年間 事業所得 (税引前)
-                        <span class="ml-2 text-[10px] bg-slate-700 px-2 py-0.5 rounded text-slate-300">税金計算ベース</span>
+                    <h2 id="label_operating_income" class="text-slate-300 font-medium mb-1 relative z-10 flex items-center">
+                        年間 営業利益 (税引前)
+                        <span class="ml-2 text-[10px] bg-slate-700 px-2 py-0.5 rounded text-slate-300">本業の利益</span>
                     </h2>
                     <div class="flex items-baseline space-x-1 relative z-10">
                         <span id="res_business_income" class="text-5xl font-bold tracking-tight">¥0</span>
@@ -343,7 +365,7 @@
                             <p id="res_revenue_monthly" class="text-xs text-slate-400 mt-0.5">月間: ¥0</p>
                         </div>
                         <div>
-                            <p class="text-slate-400 text-xs">年間 粗利益 (税込限界利益)</p>
+                            <p class="text-slate-400 text-xs">年間 粗利益 (限界利益)</p>
                             <p id="res_gross" class="text-xl font-semibold mt-1 text-emerald-400">¥0</p>
                             <p id="res_gross_monthly" class="text-xs text-emerald-400/80 mt-0.5">月間: ¥0</p>
                         </div>
@@ -356,7 +378,7 @@
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
                         <div>
-                            <h2 class="text-indigo-200 font-medium mb-1 text-sm">年間 真の最終利益 (税引後)</h2>
+                            <h2 id="label_true_profit" class="text-indigo-200 font-medium mb-1 text-sm">年間 最終利益 (税引後)</h2>
                             <div class="flex items-baseline space-x-1">
                                 <span id="res_true_profit" class="text-3xl font-bold tracking-tight">¥0</span>
                                 <span class="text-sm text-indigo-300 font-medium">/年</span>
@@ -364,13 +386,19 @@
                             <div id="res_true_profit_monthly" class="text-xs text-indigo-300 mt-1">月間: ¥0</div>
                         </div>
                         <div id="reserve_container" class="transition-colors duration-300 rounded">
-                            <h2 class="text-orange-300 font-bold mb-1 text-sm" title="真の最終利益 - 役員報酬 - 元本返済額">年間 内部留保 (残金)</h2>
+                            <h2 id="label_reserve" class="text-orange-300 font-bold mb-1 text-sm" title="真の最終利益 - 役員報酬 - 元本返済額">年間 キャッシュフロー</h2>
                             <div class="flex items-baseline space-x-1">
                                 <span id="res_reserve" class="text-3xl font-bold tracking-tight">¥0</span>
                                 <span class="text-sm text-orange-200 font-medium">/年</span>
                             </div>
                             <div id="res_reserve_monthly" class="text-xs text-orange-200/80 mt-1">月間: ¥0</div>
                             <p id="reserve_warning" class="text-[10px] text-rose-300 mt-1 hidden font-bold">※資金ショート(赤字)モデルです。</p>
+                            
+                            <!-- 法人用: 社長の手取り -->
+                            <div id="corporate_takehome_container" class="hidden mt-3 pt-2 border-t border-orange-500/30">
+                                <span class="text-[10px] text-orange-300 block mb-0.5">役員個人の手取額(推計):</span>
+                                <span id="res_personal_takehome" class="text-lg font-bold text-orange-100">¥0</span>
+                            </div>
                         </div>
                     </div>
                     
@@ -380,7 +408,7 @@
                         </div>
                         <div class="grid grid-cols-2 xl:grid-cols-3 gap-y-4 gap-x-3">
                             <div class="flex flex-col">
-                                <span id="label_tax_cons" class="text-[10px] text-indigo-300 mb-0.5">①消費税(簡易)</span>
+                                <span id="label_tax_cons" class="text-[10px] text-indigo-300 mb-0.5">①消費税</span>
                                 <span id="tax_cons" class="font-medium text-slate-200 text-sm">¥0</span>
                                 <span id="tax_cons_monthly" class="text-[10px] text-indigo-400/80">月: ¥0</span>
                             </div>
@@ -420,7 +448,7 @@
                         <ul class="space-y-4">
                             <li>
                                 <div class="flex justify-between items-center text-sm mb-1">
-                                    <span class="text-slate-500" title="役員報酬・会社負担分・元本返済を含む">総支出 (CFアウト)</span>
+                                    <span class="text-slate-500" title="事業を維持するための現金流出額">総支出 (CFアウト)</span>
                                     <span id="res_fixed_total" class="font-bold text-rose-600">¥0</span>
                                 </div>
                             </li>
@@ -445,14 +473,14 @@
                         <ul class="space-y-4">
                             <li>
                                 <div class="flex justify-between items-center text-sm mb-1">
-                                    <span class="text-slate-500">粗利益率</span>
+                                    <span class="text-slate-500">限界利益率(粗利率)</span>
                                     <span id="res_gross_margin" class="font-bold text-slate-800">0.0%</span>
                                 </div>
                                 <div class="w-full bg-slate-100 rounded-full h-1.5"><div id="bar_gross" class="bg-emerald-400 h-1.5 rounded-full" style="width: 0%"></div></div>
                             </li>
                             <li>
                                 <div class="flex justify-between items-center text-sm mb-1">
-                                    <span class="text-slate-500">事業所得率</span>
+                                    <span id="label_net_margin" class="text-slate-500">営業利益率</span>
                                     <span id="res_net_margin" class="font-bold text-slate-800">0.0%</span>
                                 </div>
                                 <div class="w-full bg-slate-100 rounded-full h-1.5"><div id="bar_net" class="bg-indigo-500 h-1.5 rounded-full" style="width: 0%"></div></div>
@@ -497,22 +525,23 @@
                 <div class="flex flex-col gap-1.5">
                     <label class="text-[11px] sm:text-xs text-slate-500 font-bold">申告区分</label>
                     <select id="tax_declaration_type" class="text-sm sm:text-base bg-white text-slate-700 border border-slate-300 rounded-lg px-2 py-2 sm:py-2.5 outline-none focus:ring-1 focus:ring-indigo-400 input-calc cursor-pointer">
-                        <option value="blue_65">青色申告 (65万控除)</option>
-                        <option value="blue_10">青色申告 (10万控除)</option>
-                        <option value="white" selected>白色申告</option>
+                        <option value="blue_65">個人: 青色申告 (65万控除)</option>
+                        <option value="blue_10">個人: 青色申告 (10万控除)</option>
+                        <option value="white" selected>個人: 白色申告</option>
                         <option value="corporate">法人</option>
                     </select>
                 </div>
                 <div class="flex flex-col gap-1.5">
                     <label class="text-[11px] sm:text-xs text-slate-500 font-bold">消費税 計算方法</label>
                     <select id="tax_calc_method" class="text-sm sm:text-base bg-white text-slate-700 border border-slate-300 rounded-lg px-2 py-2 sm:py-2.5 outline-none focus:ring-1 focus:ring-indigo-400 input-calc cursor-pointer">
-                        <option value="auto" selected>自動判定 (安い方)</option>
-                        <option value="simplified">簡易課税 (第3種)</option>
-                        <option value="standard">本則課税 (原則)</option>
+                        <option value="exempt" selected>免税事業者 (消費税納付なし)</option>
+                        <option value="auto">課税: 自動判定 (安い方)</option>
+                        <option value="simplified">課税: 簡易課税 (第3種 70%)</option>
+                        <option value="standard">課税: 本則課税 (原則)</option>
                     </select>
                 </div>
                 <div class="flex flex-col gap-1.5">
-                    <label class="text-[11px] sm:text-xs text-slate-500 font-bold">免税事業者からの仕入控除</label>
+                    <label class="text-[11px] sm:text-xs text-slate-500 font-bold">免税事業者からの仕入控除(本則用)</label>
                     <select id="tax_invoice_rate" class="text-sm sm:text-base bg-white text-slate-700 border border-slate-300 rounded-lg px-2 py-2 sm:py-2.5 outline-none focus:ring-1 focus:ring-indigo-400 input-calc cursor-pointer">
                         <option value="0.8" selected>80% (〜2026/9)</option>
                         <option value="0.5">50% (2026/10〜)</option>
@@ -587,10 +616,39 @@
                 return new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY', maximumFractionDigits: 0 }).format(amount);
             };
             const num = (id) => Number(document.getElementById(id).value) || 0;
+            
+            // 法定福利費(会社負担分)
             const getCompanyCost = (salary, type) => {
-                if (type === 'A') return salary * 0.1517; // フルタイム
-                if (type === 'B') return salary * 0.0060; // アルバイト
-                return 0; // 外注・代表者
+                if (type === 'A') return salary * 0.15; // フルタイム(社保等 約15%)
+                if (type === 'B') return salary * 0.006; // アルバイト(雇用保険 0.6%)
+                return 0; // 外注・負担なし
+            };
+
+            // 個人社保(本人負担分)
+            const getPersonalSocIns = (salary) => {
+                return salary * 0.15; // ざっくり15%
+            };
+
+            // 給与所得控除 (令和2年分以降)
+            const calcSalaryDeduction = (salary) => {
+                if (salary <= 1625000) return 550000;
+                if (salary <= 1800000) return salary * 0.4 - 100000;
+                if (salary <= 3600000) return salary * 0.3 + 80000;
+                if (salary <= 6600000) return salary * 0.2 + 440000;
+                if (salary <= 8500000) return salary * 0.1 + 1100000;
+                return 1950000;
+            };
+
+            // 所得税 (令和2年分以降)
+            const calcIncomeTax = (taxableIncome) => {
+                if (taxableIncome <= 0) return 0;
+                if (taxableIncome <= 1949000) return taxableIncome * 0.05;
+                if (taxableIncome <= 3299000) return taxableIncome * 0.10 - 97500;
+                if (taxableIncome <= 6949000) return taxableIncome * 0.20 - 427500;
+                if (taxableIncome <= 8999000) return taxableIncome * 0.23 - 636000;
+                if (taxableIncome <= 17999000) return taxableIncome * 0.33 - 1536000;
+                if (taxableIncome <= 39999000) return taxableIncome * 0.40 - 2796000;
+                return taxableIncome * 0.45 - 4796000;
             };
 
             const setVal = (id, val) => {
@@ -601,7 +659,7 @@
             };
 
             const setValMonthly = (id, val) => {
-                ['', 'sm_'].forEach(prefix => {
+                ['', 'sm_', 'sm_header_'].forEach(prefix => {
                     const el = document.getElementById(prefix + id + '_monthly');
                     if (el) el.textContent = val;
                 });
@@ -693,7 +751,7 @@
                     tax_calc_method: document.getElementById('tax_calc_method').value,
                     f_repayment_principal: num('f_repayment_principal'),
                     f_repayment_interest: num('f_repayment_interest'),
-                    revenues: [], labors: [], rents: [], expenses: []
+                    revenues: [], execs: [], labors: [], rents: [], expenses: []
                 };
 
                 document.querySelectorAll('.revenue-row').forEach(row => {
@@ -709,12 +767,24 @@
                     });
                 });
 
+                document.querySelectorAll('.exec-row').forEach(row => {
+                    const pcInput = row.querySelector('.exec-amount-pc');
+                    const smInput = row.querySelector('.exec-amount-sm');
+                    const amount = Number(pcInput ? pcInput.value : (smInput ? smInput.value : 0)) || 0;
+                    data.execs.push({
+                        name: row.querySelector('.exec-name').value,
+                        amount: amount
+                    });
+                });
+
                 document.querySelectorAll('.labor-row').forEach(row => {
+                    const pcInput = row.querySelector('.labor-amount-pc');
+                    const smInput = row.querySelector('.labor-amount-sm');
+                    const amount = Number(pcInput ? pcInput.value : (smInput ? smInput.value : 0)) || 0;
                     data.labors.push({
                         name: row.querySelector('.labor-name').value,
-                        amount: Number(row.querySelector('.labor-amount').value),
+                        amount: amount,
                         type: row.querySelector('.labor-type').value,
-                        isExec: row.querySelector('.labor-is-exec').checked,
                         isExempt: row.querySelector('.labor-exempt').checked
                     });
                 });
@@ -742,19 +812,38 @@
                 document.getElementById('work_days').value = data.work_days;
                 document.getElementById('tax_invoice_rate').value = data.tax_invoice_rate || '0.8';
                 document.getElementById('tax_declaration_type').value = data.tax_declaration_type || 'white';
-                document.getElementById('tax_calc_method').value = data.tax_calc_method || 'auto';
+                document.getElementById('tax_calc_method').value = data.tax_calc_method || 'exempt';
                 document.getElementById('f_repayment_principal').value = data.f_repayment_principal;
                 document.getElementById('f_repayment_interest').value = data.f_repayment_interest;
 
                 // 一旦リストをクリア
                 document.getElementById('dynamic_revenue_list').innerHTML = '';
+                document.getElementById('dynamic_exec_list').innerHTML = '';
                 document.getElementById('dynamic_labor_list').innerHTML = '';
                 document.getElementById('dynamic_rent_list').innerHTML = '';
                 document.getElementById('dynamic_expense_list').innerHTML = '';
 
+                const execData = data.execs || [];
+                const laborData = data.labors || [];
+
+                // 古いセーブデータ(laborsに代表者が混ざっている)の互換性対応
+                if (!data.execs && laborData.length > 0) {
+                    laborData.forEach(l => {
+                        if (l.isExec) execData.push(l);
+                    });
+                }
+
                 // 行を再生成
                 (data.revenues || []).forEach(r => addRevenueRow(r.name, r.price, r.mat, r.out, r.vol, r.matExempt, r.outExempt, r.volType || 'month'));
-                (data.labors || []).forEach(l => addLaborRow(l.name, l.amount, l.type, l.isExec, l.isExempt));
+                
+                execData.forEach(e => addExecRow(e.name, e.amount));
+                
+                laborData.forEach(l => {
+                    if (l.isExec === undefined || !l.isExec) {
+                        addLaborRow(l.name, l.amount, l.type, l.isExempt);
+                    }
+                });
+
                 (data.rents || []).forEach(r => addRentRow(r.name, r.amount, r.isExempt));
                 (data.expenses || []).forEach(e => addExpenseRow(e.name, e.amount, e.isExempt));
 
@@ -766,24 +855,30 @@
             // ==========================================
             function calculate() {
                 const workDays = num('work_days') || 20;
+                const taxDeclType = document.getElementById('tax_declaration_type').value;
+                const isCorporate = (taxDeclType === 'corporate');
+                const taxMethod = document.getElementById('tax_calc_method').value;
+
+                // UIのラベル切り替え (役員・事業主)
+                document.querySelectorAll('.label-exec-title').forEach(el => {
+                    el.textContent = isCorporate ? '役員報酬' : '事業主 (生活費)';
+                });
 
                 // 本則課税用の仕入税額控除の設定
                 const taxInvoiceRate = Number(document.getElementById('tax_invoice_rate').value);
-                let purchaseTaxTotal = 0; 
+                
+                // --- 月間集計 ---
+                let mTotalRev = 0;
+                let mTotalVar = 0;
+                let mPurchaseTax = 0; 
                 
                 const addPurchaseTax = (amount, isExempt) => {
                     let tax = amount * (10 / 110); 
-                    if (isExempt) {
-                        tax = tax * taxInvoiceRate; 
-                    }
-                    purchaseTaxTotal += tax;
+                    if (isExempt) tax = tax * taxInvoiceRate; 
+                    mPurchaseTax += tax;
                 };
 
-                // 1. 売上・変動費の計算
-                let totalRev = 0;
-                let totalVarMat = 0;
-                let totalVarOut = 0;
-
+                // 1. 売上・変動費
                 document.querySelectorAll('.revenue-row').forEach(row => {
                     const p = Number(row.querySelector('.revenue-price').value) || 0;
                     const m = Number(row.querySelector('.revenue-mat').value) || 0;
@@ -791,322 +886,322 @@
                     let v = Number(row.querySelector('.revenue-vol').value) || 0;
                     const volType = row.querySelector('.revenue-vol-type').value;
                     
-                    const isMatExempt = row.querySelector('.revenue-mat-exempt').checked;
-                    const isOutExempt = row.querySelector('.revenue-out-exempt').checked;
-
-                    if (volType === 'day') {
-                        v = v * workDays;
-                    }
+                    if (volType === 'day') v = v * workDays;
 
                     if (v > 0) {
-                        totalRev += p * v;
-                        totalVarMat += m * v;
-                        totalVarOut += o * v;
-                        
-                        addPurchaseTax(m * v, isMatExempt);
-                        addPurchaseTax(o * v, isOutExempt);
+                        mTotalRev += p * v;
+                        mTotalVar += (m + o) * v;
+                        addPurchaseTax(m * v, row.querySelector('.revenue-mat-exempt').checked);
+                        addPurchaseTax(o * v, row.querySelector('.revenue-out-exempt').checked);
                     }
                 });
 
-                const totalVar = totalVarMat + totalVarOut;
-                const grossProfit = totalRev - totalVar; 
+                // 2. 人件費
+                let mStaffLabor = 0; 
+                let mStaffSocIns = 0; 
+                let mExecLabor = 0; // 役員報酬 or 事業主生活費
+                let mExecSocIns = 0;
 
-                // 2. 人件費・会社負担分の計算
-                let execLabor = 0; 
-                let staffLabor = 0; 
-                let totalCompanyCost = 0; 
+                // 事業主・役員
+                document.querySelectorAll('.exec-row').forEach(row => {
+                    const pcInput = row.querySelector('.exec-amount-pc');
+                    const smInput = row.querySelector('.exec-amount-sm');
+                    const amount = Number(pcInput ? pcInput.value : (smInput ? smInput.value : 0)) || 0;
+                    
+                    mExecLabor += amount;
+                    if (isCorporate) {
+                        mExecSocIns += amount * 0.15; // 会社負担分
+                    }
+                });
 
+                // 従業員・外注
                 document.querySelectorAll('.labor-row').forEach(row => {
-                    const amount = Number(row.querySelector('.labor-amount').value) || 0;
+                    const pcInput = row.querySelector('.labor-amount-pc');
+                    const smInput = row.querySelector('.labor-amount-sm');
+                    const amount = Number(pcInput ? pcInput.value : (smInput ? smInput.value : 0)) || 0;
                     const type = row.querySelector('.labor-type').value;
-                    const isExec = row.querySelector('.labor-is-exec').checked;
                     const isExempt = row.querySelector('.labor-exempt').checked;
 
-                    if (isExec) {
-                        execLabor += amount;
-                    } else {
-                        staffLabor += amount;
-                        if (type === 'C') {
-                            addPurchaseTax(amount, isExempt);
-                        }
-                    }
-                    totalCompanyCost += getCompanyCost(amount, type);
+                    mStaffLabor += amount;
+                    mStaffSocIns += getCompanyCost(amount, type);
+                    if (type === 'C') addPurchaseTax(amount, isExempt);
                 });
-                
-                document.getElementById('res_company_cost').textContent = formatCurrency(totalCompanyCost) + " /月";
 
-                // 3. 拠点固定費・経費の計算
-                let rentTotal = 0;
+                document.getElementById('res_company_cost').textContent = formatCurrency(mStaffSocIns + mExecSocIns) + " /月";
+
+                // 3. 固定費
+                let mRentTotal = 0;
                 document.querySelectorAll('.rent-row').forEach(row => {
                     const amount = Number(row.querySelector('.rent-amount').value) || 0;
-                    const isExempt = row.querySelector('.rent-exempt').checked;
-                    rentTotal += amount;
-                    addPurchaseTax(amount, isExempt);
+                    mRentTotal += amount;
+                    addPurchaseTax(amount, row.querySelector('.rent-exempt').checked);
                 });
                 const elRentTotal = document.getElementById('res_rent_total');
-                if(elRentTotal) elRentTotal.textContent = formatCurrency(rentTotal);
+                if(elRentTotal) elRentTotal.textContent = formatCurrency(mRentTotal);
 
-                let dynamicExpensesTotal = 0;
+                let mDynamicExp = 0;
                 document.querySelectorAll('.expense-row').forEach(row => {
                     const amount = Number(row.querySelector('.expense-amount').value) || 0;
                     const name = row.querySelector('.expense-name').value || '';
-                    const isExempt = row.querySelector('.expense-exempt').checked;
-                    
-                    dynamicExpensesTotal += amount;
-                    
+                    mDynamicExp += amount;
                     if (!name.match(/保険|税|利息|返済|会費|寄付/)) {
-                        addPurchaseTax(amount, isExempt);
+                        addPurchaseTax(amount, row.querySelector('.expense-exempt').checked);
                     }
                 });
-                document.getElementById('res_expense_total').textContent = formatCurrency(dynamicExpensesTotal);
+                document.getElementById('res_expense_total').textContent = formatCurrency(mDynamicExp);
 
-                const repayPrincipal = num('f_repayment_principal');
-                const repayInterest = num('f_repayment_interest');
+                const mRepayPrincipal = num('f_repayment_principal');
+                const mRepayInterest = num('f_repayment_interest');
                 
-                const baseFixed = rentTotal + dynamicExpensesTotal + repayInterest;
+                const mFixedCost = mRentTotal + mDynamicExp + mRepayInterest;
+                const mGrossProfit = mTotalRev - mTotalVar;
 
-                // 4. 月間事業所得の計算 
-                const revNoTax = totalRev / 1.1;
-                const varNoTax = totalVar / 1.1;
-                const monthlyBusinessIncome = revNoTax - varNoTax - staffLabor - totalCompanyCost - baseFixed;
-                const annualBusinessIncome = monthlyBusinessIncome * 12;
-
-                // 5. 税金・保険料の算出
-                let taxInc = 0, taxRes = 0, taxEnt = 0, taxHealth = 0;
-                let annualTaxInc = 0, annualTaxRes = 0, annualTaxEnt = 0, annualTaxHealth = 0;
+                // --- 年間換算と利益計算 (すべて税込ベースからスタート) ---
+                const aTotalRev = mTotalRev * 12;
+                const aGrossProfit = mGrossProfit * 12;
                 
-                const taxMethod = document.getElementById('tax_calc_method').value;
-                const taxDeclType = document.getElementById('tax_declaration_type').value;
+                const aStaffLabor = mStaffLabor * 12;
+                const aStaffSocIns = mStaffSocIns * 12;
+                const aFixedCost = mFixedCost * 12;
                 
-                let taxConsumption = 0;
-                let annualTaxConsumption = 0;
+                const aExecLabor = mExecLabor * 12;
+                const aExecSocIns = mExecSocIns * 12;
+                const aRepayPrincipal = mRepayPrincipal * 12;
 
-                // 簡易課税と本則課税を両方計算
-                const calcSimplified = Math.max(0, (revNoTax * 0.1) * 0.3); // マイナスにはならない
-                const salesTax = totalRev * (10 / 110); 
-                const calcStandard = salesTax - purchaseTaxTotal; // マイナス(還付)もあり得る
+                // 営業利益 (役員報酬前)
+                const aOperatingIncome = aGrossProfit - aStaffLabor - aStaffSocIns - aFixedCost;
+                const mOperatingIncome = aOperatingIncome / 12;
 
-                let appliedMethod = taxMethod;
-                if (taxMethod === 'auto') {
-                    appliedMethod = calcSimplified <= calcStandard ? 'simplified' : 'standard';
-                }
-
-                if (appliedMethod === 'simplified') {
-                    taxConsumption = calcSimplified;
-                    annualTaxConsumption = taxConsumption * 12;
-                    const label = taxMethod === 'auto' ? '①消費税(簡易:自動)' : '①消費税(簡易)';
-                    ['label_tax_cons', 'sm_label_tax_cons'].forEach(id => {
-                        const el = document.getElementById(id);
-                        if(el) el.textContent = label;
-                    });
+                // --- 消費税の計算 ---
+                let aTaxConsumption = 0;
+                let consLabel = '①消費税';
+                if (taxMethod === 'exempt') {
+                    aTaxConsumption = 0;
+                    consLabel = '①消費税(免税)';
                 } else {
-                    taxConsumption = calcStandard;
-                    annualTaxConsumption = taxConsumption * 12;
-                    const label = taxMethod === 'auto' ? '①消費税(本則:自動)' : '①消費税(本則)';
-                    ['label_tax_cons', 'sm_label_tax_cons'].forEach(id => {
-                        const el = document.getElementById(id);
-                        if(el) el.textContent = label;
-                    });
-                }
+                    const revNoTax = aTotalRev / 1.1; // 簡易的な税抜売上
+                    const calcSimplified = Math.max(0, (revNoTax * 0.1) * 0.3); // 3種 70%みなし
+                    const salesTax = aTotalRev * (10 / 110); 
+                    const calcStandard = Math.max(0, salesTax - (mPurchaseTax * 12));
 
-                if (taxDeclType === 'corporate') {
+                    let appliedMethod = taxMethod;
+                    if (taxMethod === 'auto') appliedMethod = calcSimplified <= calcStandard ? 'simplified' : 'standard';
+
+                    if (appliedMethod === 'simplified') {
+                        aTaxConsumption = calcSimplified;
+                        consLabel = taxMethod === 'auto' ? '①消費税(簡易:自)' : '①消費税(簡易)';
+                    } else {
+                        aTaxConsumption = calcStandard;
+                        consLabel = taxMethod === 'auto' ? '①消費税(本則:自)' : '①消費税(本則)';
+                    }
+                }
+                
+                ['label_tax_cons', 'sm_label_tax_cons'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if(el) el.textContent = consLabel;
+                });
+
+                // --- 申告区分ごとの税金・CF計算 ---
+                let aTax1 = 0, aTax2 = 0, aTax3 = 0, aTax4 = 0;
+                let aNetProfit = 0;
+                let aCF = 0;
+                let aPersonalTakeHome = 0; // 法人時のみ使用
+
+                if (isCorporate) {
                     // 【法人】
-                    const annualCorporateIncome = annualBusinessIncome - (execLabor * 12);
+                    // 課税所得 = 営業利益 - 役員報酬 - 役員社保(会社) - 消費税納付額
+                    const aTaxableIncome = aOperatingIncome - aExecLabor - aExecSocIns - aTaxConsumption;
                     
-                    let annualCorpTax = 0;
-                    if (annualCorporateIncome > 0) {
-                        if (annualCorporateIncome <= 8000000) {
-                            annualCorpTax = annualCorporateIncome * 0.24;
-                        } else {
-                            annualCorpTax = (8000000 * 0.24) + ((annualCorporateIncome - 8000000) * 0.34);
-                        }
+                    let corpTax = 0;
+                    if (aTaxableIncome > 0) {
+                        corpTax = aTaxableIncome <= 8000000 ? aTaxableIncome * 0.23 : (8000000 * 0.23) + ((aTaxableIncome - 8000000) * 0.33);
                     }
-                    annualTaxInc = annualCorpTax;
-                    taxInc = annualCorpTax / 12;
+                    const perCapitaTax = 70000;
                     
-                    annualTaxRes = 70000;
-                    taxRes = 70000 / 12;
+                    aTax1 = corpTax; // 法人税等
+                    aTax2 = perCapitaTax; // 均等割
+                    aTax3 = aExecSocIns; // 役員社保(会社)
+                    aTax4 = 0; // 国保なし
                     
-                    const annualExecSalary = execLabor * 12;
-                    const annualExecSocIns = annualExecSalary * 0.15; 
+                    const aTotalCorpTax = aTaxConsumption + corpTax + perCapitaTax + aExecSocIns;
                     
-                    let salaryDeduction = 0;
-                    if (annualExecSalary <= 1625000) salaryDeduction = 550000;
-                    else if (annualExecSalary <= 1800000) salaryDeduction = annualExecSalary * 0.4 - 100000;
-                    else if (annualExecSalary <= 3600000) salaryDeduction = annualExecSalary * 0.3 + 80000;
-                    else if (annualExecSalary <= 6600000) salaryDeduction = annualExecSalary * 0.2 + 440000;
-                    else if (annualExecSalary <= 8500000) salaryDeduction = annualExecSalary * 0.1 + 1100000;
-                    else salaryDeduction = 1950000;
+                    aNetProfit = aOperatingIncome - aExecLabor - aTotalCorpTax; 
+                    aCF = aNetProfit - aRepayPrincipal;
+
+                    // 社長個人の手取り
+                    const pSocIns = getPersonalSocIns(aExecLabor);
+                    const pSalaryDed = calcSalaryDeduction(aExecLabor);
+                    const pTaxable = Math.max(0, aExecLabor - pSocIns - pSalaryDed - 480000);
+                    const pIncTax = calcIncomeTax(pTaxable);
+                    const pResTax = pTaxable > 0 ? pTaxable * 0.10 + 5000 : 5000;
                     
-                    const personalTaxableIncome = Math.max(0, annualExecSalary - salaryDeduction - annualExecSocIns - 480000);
-                    
-                    let personalIncTax = 0;
-                    if (personalTaxableIncome > 0) {
-                        if (personalTaxableIncome <= 1949000)      personalIncTax = personalTaxableIncome * 0.05;
-                        else if (personalTaxableIncome <= 3299000) personalIncTax = personalTaxableIncome * 0.10 - 97500;
-                        else if (personalTaxableIncome <= 6949000) personalIncTax = personalTaxableIncome * 0.20 - 427500;
-                        else if (personalTaxableIncome <= 8999000) personalIncTax = personalTaxableIncome * 0.23 - 636000;
-                        else if (personalTaxableIncome <= 17999000)personalIncTax = personalTaxableIncome * 0.33 - 1536000;
-                        else if (personalTaxableIncome <= 39999000)personalIncTax = personalTaxableIncome * 0.40 - 2796000;
-                        else                                       personalIncTax = personalTaxableIncome * 0.45 - 4796000;
-                    }
-                    const personalResTax = personalTaxableIncome > 0 ? (personalTaxableIncome * 0.10 + 5000) : 5000;
-                    
-                    annualTaxEnt = personalIncTax + personalResTax;
-                    taxEnt = annualTaxEnt / 12;
-                    
-                    annualTaxHealth = annualExecSocIns;
-                    taxHealth = annualTaxHealth / 12;
+                    aPersonalTakeHome = aExecLabor - pSocIns - pIncTax - pResTax;
+
+                    // UIラベル更新
+                    ['label_operating_income', 'sm_label_operating_income'].forEach(id => { const el = document.getElementById(id); if(el) el.innerHTML = '年間 営業利益 (税引前) <span class="ml-2 text-[10px] bg-slate-700 px-2 py-0.5 rounded text-slate-300">本業の利益</span>'; });
+                    ['label_true_profit', 'sm_label_true_profit'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = '年間 最終利益 (税引後)'; });
+                    ['label_reserve', 'sm_label_reserve'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = '法人キャッシュフロー (内部留保)'; });
                     
                     ['label_tax_inc', 'sm_label_tax_inc'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = '②法人税等'; });
                     ['label_tax_res', 'sm_label_tax_res'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = '③法人均等割'; });
-                    ['label_tax_ent', 'sm_label_tax_ent'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = '④役員所得/住民税'; });
-                    ['label_tax_health', 'sm_label_tax_health'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = '⑤役員社保料'; });
-                    
+                    ['label_tax_ent', 'sm_label_tax_ent'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = '④役員社保(会社)'; });
+                    ['label_tax_health', 'sm_label_tax_health'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = '⑤(なし)'; });
+
+                    ['corporate_takehome_container', 'sm_corporate_takehome_container'].forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) el.classList.remove('hidden');
+                    });
+
                 } else {
                     // 【個人事業主】
-                    let blueDeduction = 0;
-                    if (taxDeclType === 'blue_65') blueDeduction = 650000;
-                    if (taxDeclType === 'blue_10') blueDeduction = 100000;
-
-                    const taxableIncome = Math.max(0, annualBusinessIncome - blueDeduction - 480000);
-                    let annualIncomeTax = 0;
-                    if (taxableIncome > 0) {
-                        if (taxableIncome <= 1949000)      annualIncomeTax = taxableIncome * 0.05;
-                        else if (taxableIncome <= 3299000) annualIncomeTax = taxableIncome * 0.10 - 97500;
-                        else if (taxableIncome <= 6949000) annualIncomeTax = taxableIncome * 0.20 - 427500;
-                        else if (taxableIncome <= 8999000) annualIncomeTax = taxableIncome * 0.23 - 636000;
-                        else if (taxableIncome <= 17999000)annualIncomeTax = taxableIncome * 0.33 - 1536000;
-                        else if (taxableIncome <= 39999000)annualIncomeTax = taxableIncome * 0.40 - 2796000;
-                        else                               annualIncomeTax = taxableIncome * 0.45 - 4796000;
+                    const blueDed = taxDeclType === 'blue_65' ? 650000 : (taxDeclType === 'blue_10' ? 100000 : 0);
+                    const aTaxableIncome = aOperatingIncome - aTaxConsumption;
+                    const aBizTaxable = Math.max(0, aTaxableIncome - blueDed);
+                    
+                    let healthIns = 0;
+                    if (aBizTaxable > 0) {
+                        healthIns = Math.min(1040000, (aBizTaxable - 430000) * 0.10 + 50000); 
+                        healthIns = Math.max(0, healthIns);
                     }
-                    annualTaxInc = annualIncomeTax;
-                    taxInc = annualTaxInc / 12;
 
-                    annualTaxRes = taxableIncome > 0 ? (taxableIncome * 0.10 + 5000) : 5000;
-                    taxRes = annualTaxRes / 12;
+                    const pTaxable = Math.max(0, aBizTaxable - healthIns - 480000);
+                    const incTax = calcIncomeTax(pTaxable);
+                    const resTax = pTaxable > 0 ? pTaxable * 0.10 + 5000 : 5000;
+                    const entTax = Math.max(0, aTaxableIncome - 2900000) * 0.05;
 
-                    annualTaxEnt = Math.max(0, annualBusinessIncome - 2900000) * 0.05;
-                    taxEnt = annualTaxEnt / 12;
+                    aTax1 = incTax;
+                    aTax2 = resTax;
+                    aTax3 = entTax;
+                    aTax4 = healthIns;
+                    
+                    const aTotalPersonalTax = aTaxConsumption + incTax + resTax + entTax + healthIns;
 
-                    annualTaxHealth = Math.min(Math.max(0, annualBusinessIncome) * 0.10, 1060000);
-                    taxHealth = annualTaxHealth / 12;
+                    aNetProfit = aOperatingIncome - aTotalPersonalTax; 
+                    aCF = aNetProfit - aRepayPrincipal - aExecLabor; // 最終的に生活費を引いたものがCF
+                    
+                    // UIラベル更新
+                    ['label_operating_income', 'sm_label_operating_income'].forEach(id => { const el = document.getElementById(id); if(el) el.innerHTML = '年間 事業所得 <span class="ml-2 text-[10px] bg-slate-700 px-2 py-0.5 rounded text-slate-300">経費控除後</span>'; });
+                    ['label_true_profit', 'sm_label_true_profit'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = '年間 税引後所得'; });
+                    ['label_reserve', 'sm_label_reserve'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = '最終キャッシュフロー (生活費等控除後)'; });
 
                     ['label_tax_inc', 'sm_label_tax_inc'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = '②所得税'; });
                     ['label_tax_res', 'sm_label_tax_res'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = '③住民税'; });
                     ['label_tax_ent', 'sm_label_tax_ent'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = '④個人事業税'; });
                     ['label_tax_health', 'sm_label_tax_health'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = '⑤国保料'; });
+
+                    ['corporate_takehome_container', 'sm_corporate_takehome_container'].forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) el.classList.add('hidden');
+                    });
                 }
 
-                const taxTotal = taxConsumption + taxInc + taxRes + taxEnt + taxHealth;
-                const annualTaxTotal = annualTaxConsumption + annualTaxInc + annualTaxRes + annualTaxEnt + annualTaxHealth;
+                const aTotalTaxes = aTaxConsumption + aTax1 + aTax2 + aTax3 + aTax4;
 
-                // 6. 最終利益と内部留保
-                const trueNetProfit = monthlyBusinessIncome - taxTotal;
-                const internalReserve = trueNetProfit - execLabor - repayPrincipal; 
+                // --- 資金繰り指標 (月間) ---
+                let mTotalCashOut = mStaffLabor + mStaffSocIns + mFixedCost + mRepayPrincipal;
+                if (isCorporate) {
+                    mTotalCashOut += mExecLabor + mExecSocIns + (aTax1 + aTax2)/12 + (aTaxConsumption/12);
+                } else {
+                    mTotalCashOut += mExecLabor + (aTax1 + aTax2 + aTax3 + aTax4)/12 + (aTaxConsumption/12);
+                }
 
-                // 7. 資金繰り指標用
-                const totalCashOut = staffLabor + totalCompanyCost + baseFixed + execLabor + repayPrincipal;
-                const dailyReq = totalCashOut / workDays;
-                
-                const grossMargin = totalRev > 0 ? grossProfit / totalRev : 0;
-                const netMargin = revNoTax > 0 ? monthlyBusinessIncome / revNoTax : 0;
-                const breakeven = grossMargin > 0 ? totalCashOut / grossMargin : 0; 
+                const dailyReq = mTotalCashOut / workDays;
+                const mGrossMargin = mTotalRev > 0 ? mGrossProfit / mTotalRev : 0;
+                const mNetMargin = mTotalRev > 0 ? mOperatingIncome / mTotalRev : 0;
+                const breakeven = mGrossMargin > 0 ? mTotalCashOut / mGrossMargin : 0; 
 
                 // --- 画面描画 ---
-                setVal('res_revenue', formatCurrency(totalRev * 12));
-                setValMonthly('res_revenue', `月間: ${formatCurrency(totalRev)}`);
+                setVal('res_revenue', formatCurrency(aTotalRev));
+                setValMonthly('res_revenue', `月間: ${formatCurrency(mTotalRev)}`);
 
-                setVal('res_gross', formatCurrency(grossProfit * 12));
-                setValMonthly('res_gross', `月間: ${formatCurrency(grossProfit)}`);
+                setVal('res_gross', formatCurrency(aGrossProfit));
+                setValMonthly('res_gross', `月間: ${formatCurrency(mGrossProfit)}`);
 
-                setVal('res_variable', formatCurrency(totalVar));
-                setVal('res_fixed_total', formatCurrency(totalCashOut));
+                setVal('res_variable', formatCurrency(mTotalVar));
+                setVal('res_fixed_total', formatCurrency(mTotalCashOut));
 
-                setVal('res_business_income', formatCurrency(annualBusinessIncome));
-                setValMonthly('res_business_income', `月間: ${formatCurrency(monthlyBusinessIncome)}`);
+                setVal('res_business_income', formatCurrency(aOperatingIncome));
+                setValMonthly('res_business_income', `月間: ${formatCurrency(mOperatingIncome)}`);
 
-                // 事業所得の色
-                const bizIncomeColor = annualBusinessIncome < 0 ? 'text-rose-400' : 'text-white';
+                // 営業利益の色
+                const bizIncomeColor = aOperatingIncome < 0 ? 'text-rose-400' : 'text-white';
                 const pcBizIncome = document.getElementById('res_business_income');
                 if (pcBizIncome) pcBizIncome.className = `text-5xl font-bold tracking-tight ${bizIncomeColor}`;
                 const smBizIncome = document.getElementById('sm_header_res_business_income');
                 if (smBizIncome) smBizIncome.className = `text-lg font-bold leading-none ${bizIncomeColor} mb-1`;
 
-                setVal('res_true_profit', formatCurrency(trueNetProfit * 12));
-                setValMonthly('res_true_profit', `月間: ${formatCurrency(trueNetProfit)}`);
+                setVal('res_true_profit', formatCurrency(aNetProfit));
+                setValMonthly('res_true_profit', `月間: ${formatCurrency(aNetProfit / 12)}`);
 
-                setVal('res_reserve', formatCurrency(internalReserve * 12));
-                setValMonthly('res_reserve', `月間: ${formatCurrency(internalReserve)}`);
+                setVal('res_reserve', formatCurrency(aCF));
+                setValMonthly('res_reserve', `月間: ${formatCurrency(aCF / 12)}`);
+                
+                if (isCorporate) {
+                    setVal('res_personal_takehome', formatCurrency(aPersonalTakeHome));
+                }
 
-                // 内部留保の色
-                const reserveColor = internalReserve < 0 ? 'text-rose-500' : 'text-orange-200';
+                // CFの色
+                const reserveColor = aCF < 0 ? 'text-rose-500' : 'text-orange-200';
                 const pcReserve = document.getElementById('res_reserve');
                 if (pcReserve) pcReserve.className = `text-3xl font-bold tracking-tight ${reserveColor}`;
                 const smReserve = document.getElementById('sm_header_res_reserve');
                 if (smReserve) smReserve.className = `text-lg font-bold leading-none ${reserveColor} mb-1`;
                 
                 const pcReserveMon = document.getElementById('res_reserve_monthly');
-                if (pcReserveMon) pcReserveMon.className = internalReserve < 0 ? "text-xs text-rose-400 mt-1" : "text-xs text-orange-200/80 mt-1";
+                if (pcReserveMon) pcReserveMon.className = aCF < 0 ? "text-xs text-rose-400 mt-1" : "text-xs text-orange-200/80 mt-1";
 
                 ['reserve_container', 'sm_reserve_container'].forEach(id => {
                     const el = document.getElementById(id);
                     if (el) {
-                        if (internalReserve < 0) {
-                            el.classList.add('alert-negative');
-                        } else {
-                            el.classList.remove('alert-negative');
-                        }
+                        if (aCF < 0) { el.classList.add('alert-negative'); } 
+                        else { el.classList.remove('alert-negative'); }
                     }
                 });
 
                 ['reserve_warning', 'sm_reserve_warning'].forEach(id => {
                     const el = document.getElementById(id);
                     if (el) {
-                        if (internalReserve < 0) {
-                            el.classList.remove('hidden');
-                        } else {
-                            el.classList.add('hidden');
-                        }
+                        if (aCF < 0) { el.classList.remove('hidden'); } 
+                        else { el.classList.add('hidden'); }
                     }
                 });
 
                 // 税金
-                setVal('tax_cons', formatCurrency(annualTaxConsumption));
-                setValMonthly('tax_cons', `月: ${formatCurrency(taxConsumption)}`);
-                const consColor = annualTaxConsumption < 0 ? 'text-emerald-300' : 'text-slate-300';
+                setVal('tax_cons', formatCurrency(aTaxConsumption));
+                setValMonthly('tax_cons', `月: ${formatCurrency(aTaxConsumption / 12)}`);
+                const consColor = aTaxConsumption < 0 ? 'text-emerald-300' : 'text-slate-200';
                 ['tax_cons', 'sm_tax_cons'].forEach(id => {
                     const el = document.getElementById(id);
                     if(el) {
-                        el.classList.remove('text-emerald-300', 'text-slate-300', 'text-slate-200');
+                        el.classList.remove('text-emerald-300', 'text-slate-200');
                         el.classList.add(consColor);
                     }
                 });
 
-                setVal('tax_inc', formatCurrency(annualTaxInc));
-                setValMonthly('tax_inc', `月: ${formatCurrency(taxInc)}`);
-                setVal('tax_res', formatCurrency(annualTaxRes));
-                setValMonthly('tax_res', `月: ${formatCurrency(taxRes)}`);
-                setVal('tax_ent', formatCurrency(annualTaxEnt));
-                setValMonthly('tax_ent', `月: ${formatCurrency(taxEnt)}`);
-                setVal('tax_health', formatCurrency(annualTaxHealth));
-                setValMonthly('tax_health', `月: ${formatCurrency(taxHealth)}`);
-                setVal('tax_total', formatCurrency(annualTaxTotal));
-                setValMonthly('tax_total', `月: ${formatCurrency(taxTotal)}`);
+                setVal('tax_inc', formatCurrency(aTax1));
+                setValMonthly('tax_inc', `月: ${formatCurrency(aTax1 / 12)}`);
+                setVal('tax_res', formatCurrency(aTax2));
+                setValMonthly('tax_res', `月: ${formatCurrency(aTax2 / 12)}`);
+                setVal('tax_ent', formatCurrency(aTax3));
+                setValMonthly('tax_ent', `月: ${formatCurrency(aTax3 / 12)}`);
+                setVal('tax_health', formatCurrency(aTax4));
+                setValMonthly('tax_health', `月: ${formatCurrency(aTax4 / 12)}`);
+                setVal('tax_total', formatCurrency(aTotalTaxes));
+                setValMonthly('tax_total', `月: ${formatCurrency(aTotalTaxes / 12)}`);
 
                 setVal('res_daily_req', formatCurrency(dailyReq));
                 setVal('res_breakeven', breakeven > 0 ? formatCurrency(breakeven) : '-');
 
-                setVal('res_gross_margin', (grossMargin * 100).toFixed(1) + '%');
-                setVal('res_net_margin', (netMargin * 100).toFixed(1) + '%');
+                setVal('res_gross_margin', (mGrossMargin * 100).toFixed(1) + '%');
+                setVal('res_net_margin', (mNetMargin * 100).toFixed(1) + '%');
 
                 ['bar_gross', 'sm_bar_gross'].forEach(id => {
                     const el = document.getElementById(id);
-                    if(el) el.style.width = `${Math.min(100, Math.max(0, grossMargin * 100))}%`;
+                    if(el) el.style.width = `${Math.min(100, Math.max(0, mGrossMargin * 100))}%`;
                 });
                 ['bar_net', 'sm_bar_net'].forEach(id => {
                     const el = document.getElementById(id);
-                    if(el) el.style.width = `${Math.min(100, Math.max(0, netMargin * 100))}%`;
+                    if(el) el.style.width = `${Math.min(100, Math.max(0, mNetMargin * 100))}%`;
                 });
             }
 
@@ -1396,11 +1491,52 @@
                 row.querySelector('button').addEventListener('click', () => { row.remove(); calculate(); });
             };
             
-            // 2. 人件費
+            // 2. 人件費・報酬
+            const execList = document.getElementById('dynamic_exec_list');
+            const btnAddExec = document.getElementById('btn_add_exec');
             const laborList = document.getElementById('dynamic_labor_list');
             const btnAddLabor = document.getElementById('btn_add_labor');
 
-            const addLaborRow = (name = '', amount = 0, type = 'A', isExec = false, isExempt = false) => {
+            // 代表者追加関数
+            const addExecRow = (name = '', amount = 0) => {
+                const row = document.createElement('div');
+                row.className = 'exec-row flex flex-col sm:flex-row sm:items-center justify-between bg-indigo-50/50 sm:bg-white p-3 sm:p-4 rounded-xl sm:rounded-lg border border-indigo-100 sm:border-slate-200 shadow-sm gap-2 sm:gap-4 relative group';
+                row.innerHTML = `
+                    <button type="button" class="absolute -top-2 -right-2 text-slate-400 hover:text-rose-500 bg-white hover:bg-rose-50 rounded-full shadow-sm p-1.5 transition-colors z-10 sm:opacity-0 group-hover:opacity-100 focus:opacity-100" title="削除">
+                        <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                    <div class="flex items-center gap-2 sm:flex-1">
+                        <input type="text" value="${name}" placeholder="名前 (例: 代表)" class="exec-name w-full px-2.5 py-1.5 sm:px-3 sm:py-2 border border-indigo-200 sm:border-slate-300 rounded-lg text-xs sm:text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 font-bold text-slate-700 bg-white">
+                        <div class="flex sm:hidden items-center bg-white focus-within:ring-1 focus-within:ring-indigo-500 border border-indigo-200 rounded-lg overflow-hidden shrink-0">
+                            <input type="number" value="${amount}" class="exec-amount-sm w-24 px-2 py-1.5 text-right font-bold outline-none bg-transparent text-xs text-indigo-700">
+                            <span class="text-indigo-400 text-[10px] pr-2 font-medium">円</span>
+                        </div>
+                    </div>
+                    <div class="hidden sm:flex items-center gap-2">
+                        <span class="text-xs text-slate-500 font-medium">月額</span>
+                        <input type="number" value="${amount}" class="exec-amount-pc w-28 sm:w-32 px-2 py-2 border border-slate-300 rounded-lg text-right font-bold focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50 focus:bg-white text-sm text-indigo-700">
+                        <span class="text-slate-500 text-sm whitespace-nowrap">円</span>
+                    </div>
+                `;
+                execList.appendChild(row);
+                
+                row.querySelectorAll('input:not(.exec-amount-sm):not(.exec-amount-pc)').forEach(input => {
+                    input.addEventListener('input', calculate);
+                });
+
+                // スマホ用とPC用の金額同期
+                const smInput = row.querySelector('.exec-amount-sm');
+                const pcInput = row.querySelector('.exec-amount-pc');
+                if (smInput && pcInput) {
+                    smInput.addEventListener('input', (e) => { pcInput.value = e.target.value; calculate(); });
+                    pcInput.addEventListener('input', (e) => { smInput.value = e.target.value; calculate(); });
+                }
+
+                row.querySelector('button').addEventListener('click', () => { row.remove(); calculate(); });
+            };
+
+            // 従業員・外注追加関数
+            const addLaborRow = (name = '', amount = 0, type = 'A', isExempt = false) => {
                 const row = document.createElement('div');
                 row.className = 'labor-row flex flex-col sm:flex-row sm:items-center justify-between bg-white p-3 sm:p-4 rounded-xl sm:rounded-lg border border-slate-200 shadow-sm gap-2 sm:gap-4 relative group';
                 row.innerHTML = `
@@ -1408,27 +1544,23 @@
                         <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
                     <div class="flex items-center gap-2 sm:flex-1">
-                        <input type="text" value="${name}" placeholder="名前" class="labor-name w-full px-2.5 py-1.5 sm:px-3 sm:py-2 border border-slate-300 rounded-lg text-xs sm:text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 font-bold text-slate-700 bg-slate-50 focus:bg-white">
+                        <input type="text" value="${name}" placeholder="従業員・外注先" class="labor-name w-full px-2.5 py-1.5 sm:px-3 sm:py-2 border border-slate-300 rounded-lg text-xs sm:text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 font-bold text-slate-700 bg-slate-50 focus:bg-white">
                         <div class="flex sm:hidden items-center bg-slate-50 focus-within:bg-white focus-within:ring-1 focus-within:ring-indigo-500 border border-slate-300 rounded-lg overflow-hidden shrink-0">
-                            <input type="number" value="${amount}" class="labor-amount w-20 px-2 py-1.5 text-right font-medium outline-none bg-transparent text-xs">
+                            <input type="number" value="${amount}" class="labor-amount-sm w-24 px-2 py-1.5 text-right font-medium outline-none bg-transparent text-xs">
                             <span class="text-slate-500 text-[10px] pr-2">円</span>
                         </div>
                     </div>
                     <div class="hidden sm:flex items-center gap-2">
-                        <input type="number" value="${amount}" class="labor-amount w-24 sm:w-28 px-2 py-2 border border-slate-300 rounded-lg text-right font-medium focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50 focus:bg-white text-sm">
+                        <input type="number" value="${amount}" class="labor-amount-pc w-24 sm:w-28 px-2 py-2 border border-slate-300 rounded-lg text-right font-medium focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50 focus:bg-white text-sm">
                         <span class="text-slate-500 text-sm whitespace-nowrap">円</span>
                     </div>
                     <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto pt-1 sm:pt-0 border-t border-slate-100 sm:border-none">
                         <select class="labor-type flex-1 sm:w-auto text-[10px] sm:text-xs border border-slate-300 rounded-lg px-1.5 py-1.5 sm:px-2 sm:py-2 bg-slate-50 focus:bg-white focus:ring-1 focus:ring-indigo-500 outline-none cursor-pointer text-slate-600">
                             <option value="A" ${type === 'A' ? 'selected' : ''}>フルタイム(社保)</option>
                             <option value="B" ${type === 'B' ? 'selected' : ''}>アルバイト(雇保)</option>
-                            <option value="C" ${type === 'C' ? 'selected' : ''}>外注・代表(負担0)</option>
+                            <option value="C" ${type === 'C' ? 'selected' : ''}>外注(負担0)</option>
                         </select>
                         <div class="flex gap-1.5 justify-end shrink-0 sm:w-auto">
-                            <label class="flex-1 sm:flex-none flex justify-center items-center space-x-1 cursor-pointer px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg border transition-colors has-[:checked]:bg-indigo-100 has-[:checked]:border-indigo-300 bg-slate-50 border-slate-200">
-                                <input type="checkbox" class="labor-is-exec peer w-3 h-3 sm:w-3.5 sm:h-3.5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500" ${isExec ? 'checked' : ''}>
-                                <span class="text-[10px] sm:text-xs font-bold text-slate-500 peer-checked:text-indigo-800">役員</span>
-                            </label>
                             <label class="flex-1 sm:flex-none flex justify-center items-center space-x-1 cursor-pointer px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg border transition-colors has-[:checked]:bg-orange-100 has-[:checked]:border-orange-300 bg-slate-50 border-slate-200">
                                 <input type="checkbox" class="labor-exempt peer w-3 h-3 sm:w-3.5 sm:h-3.5 text-orange-600 border-gray-300 rounded focus:ring-orange-500" ${isExempt ? 'checked' : ''}>
                                 <span class="text-[10px] sm:text-xs font-bold text-slate-500 peer-checked:text-orange-800" title="外注時のみ">免税</span>
@@ -1437,10 +1569,20 @@
                     </div>
                 `;
                 laborList.appendChild(row);
-                row.querySelectorAll('input, select').forEach(input => {
+                
+                row.querySelectorAll('input:not(.labor-amount-sm):not(.labor-amount-pc), select').forEach(input => {
                     input.addEventListener('input', calculate);
                     input.addEventListener('change', calculate);
                 });
+
+                // スマホ用とPC用の金額入力欄を同期させる
+                const smInput = row.querySelector('.labor-amount-sm');
+                const pcInput = row.querySelector('.labor-amount-pc');
+                if (smInput && pcInput) {
+                    smInput.addEventListener('input', (e) => { pcInput.value = e.target.value; calculate(); });
+                    pcInput.addEventListener('input', (e) => { smInput.value = e.target.value; calculate(); });
+                }
+
                 row.querySelector('button').addEventListener('click', () => { row.remove(); calculate(); });
             };
 
@@ -1508,6 +1650,9 @@
             // 初期リスト生成
             addRevenueRow('', 0, 0, 0, 1, false, false, 'month');
             btnAddRevenue.addEventListener('click', () => { addRevenueRow('', 0, 0, 0, 1, false, false, 'month'); calculate(); });
+
+            addExecRow('', 0);
+            btnAddExec.addEventListener('click', () => { addExecRow('', 0); calculate(); });
 
             addLaborRow('', 0, 'A', false);
             btnAddLabor.addEventListener('click', () => { addLaborRow('', 0, 'A', false); calculate(); });
